@@ -3,6 +3,7 @@ import base64
 import streamlit as st
 from io import BytesIO
 from PIL import Image
+import time
 
 def getResponse(prompt):
     if len(prompt) < 10:
@@ -52,13 +53,23 @@ def getImageRespone(prompt,base64_image):
 def clar_chat():
     del st.session_state["messages"]
 
+def chat_data():
+    current_time = time.localtime()
+
+    # Format the time as "DD/MM/YYYY HH:MM"
+    formatted_time = time.strftime("%d/%m/%Y %H:%M", current_time)
+    tx = f"###  {formatted_time}  ###\n"
+    if "messages" in st.session_state:
+        for msg in st.session_state.messages:
+            tx += msg['role'] + ":\n" + msg['content'] + "\n\n"
+    return tx
 
 st.title("OpenAI Chatbot")
 st.caption("A chatbot Using OpenAI 4o-mini")
 
 @st.experimental_fragment
 def stre():
-    con = st.container(height=450,border=True)
+    con = st.container(height=300,border=True)
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
         con.chat_message("assistant").write("How can I help you?")
@@ -102,12 +113,18 @@ if "api_key" in st.session_state:
 else:
     st.write("Please Add your OpenAi API Key")
 
-
-cola, colb = st.columns([0.8,0.2])
-colb.button("Clear Chat",on_click=clar_chat)
-with cola.expander("API Key"):
-    key = st.chat_input("Enter Your OpenAi API Key")
-    if key is not None:
-        if len(key.strip()) > 1:
-            st.session_state["api_key"] = key
-            client = OpenAI(api_key=key)
+with st.sidebar:
+    with st.expander("API Key"):
+        key = st.chat_input("Enter Your OpenAi API Key")
+        if key is not None:
+            if len(key.strip()) > 1:
+                st.session_state["api_key"] = key
+                client = OpenAI(api_key=key)
+                st.rerun()
+    cola, colb = st.columns([0.5,0.5])
+    cola.download_button(
+        label="Download Chat",
+        data=chat_data(),
+        file_name="chat_history.txt"
+    )
+    colb.button("Clear Chat",on_click=clar_chat)
