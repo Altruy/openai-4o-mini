@@ -82,7 +82,7 @@ def stre():
 
         prompt = st.text_input("Enter Your Prompt")
 
-        uploaded_file = st.file_uploader("Upload Your file")
+        uploaded_file = st.file_uploader("Upload Your Image",type=["png","jpg","jpeg"])
         if uploaded_file is not None:
             bytes_data = uploaded_file.getvalue()
             image = Image.open(BytesIO(bytes_data))
